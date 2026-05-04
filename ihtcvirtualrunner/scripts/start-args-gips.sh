@@ -51,7 +51,7 @@ export preprocessing=$6
 export constraintCleanUp=$7
 
 # Extract needed XMI files
-echo "=> Applying GIPS XMI workarounds."
+echo "# Script info: Applying GIPS XMI workarounds."
 
 # Extract XMI files
 unzip -qq -o $JAR "ihtcvirtualgipssolution/hipe/*/hipe-network.xmi"
@@ -63,18 +63,18 @@ unzip -qq -o $JAR "ihtcvirtualpreprocessing/api/ibex-patterns.xmi"
 # Actual run
 export RUN_NAME=$(date +%Y-%m-%d"_"%H-%M-%S)
 if [ ! -z "$parameter" ] && [ ! -z "$callback" ] && [ ! -z "$preprocessing" ] && [ ! -z "$constraintCleanUp" ]; then
-    export ARGS="-i $inputJson -o $outputJson --verbose --randomseed $randomSeed --callback $callback --parameter $parameter --preprocessing $preprocessing" u
+    export ARGS="-i $inputJson -o $outputJson --verbose --randomseed $randomSeed --callback $callback --parameter $parameter --preprocessing $preprocessing u"
 else
     if [ ! -z "$parameter" ] && [ ! -z "$callback" ] && [ ! -z "$preprocessing" ]; then
         export ARGS="-i $inputJson -o $outputJson --verbose --randomseed $randomSeed --callback $callback --parameter $parameter --preprocessing $preprocessing"
     else
-        echo "Invalid combination of parameters."
+        echo "# Script error: Invalid combination of parameters."
         exit 1
     fi
 fi
 
 echo "#"
-echo "# => Using ARGS: $ARGS"
+echo "# Script info: Using ARGS: $ARGS"
 echo "#"
 run
 # Finished actual run

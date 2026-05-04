@@ -15,7 +15,12 @@
 # @author Maximilian Kratz (maximilian.kratz@es.tu-darmstadt.de)
 #
 
-set -e
+# Stop on errors
+# set -e
+
+# Stop loop if CTRL + C gets pressed but run timeout still in the background
+# https://unix.stackexchange.com/a/57692
+trap 'kill -INT -$pid' INT
 
 # Configuration taken by the arguments
 export randomSeed=$1
@@ -26,50 +31,58 @@ export globalTimeOut=$5
 export constraintCleanUp=$6
 
 if [ -z "$randomSeed" ]; then
-    echo "Missing parameter for random seed."
+    echo "# Script error: Missing parameter for random seed."
     exit 1
 fi
 if [ -z "$callback" ]; then
-    echo "Missing parameter for callback JSON path."
+    echo "# Script error: Missing parameter for callback JSON path."
     exit 1
 fi
 if [ -z "$parameter" ]; then
-    echo "Missing parameter for parameter JSON path."
+    echo "# Script error: Missing parameter for parameter JSON path."
     exit 1
 fi
 if [ -z "$preprocessing" ]; then
-    echo "Missing parameter for preprocessing configuration."
+    echo "# Script error: Missing parameter for preprocessing configuration."
     exit 1
 fi
 if [ -z "$globalTimeOut" ]; then
-    echo "Missing parameter for global timeout."
+    echo "# Script error: Missing parameter for global timeout."
     exit 1
 fi
 # No parameter check for constraint clean up on purpose
 
 # Executes the `start-args-gips.sh` script
 function run {
-    echo "Running: $1"
-    # Arguments of the `start-args-gips.sh` script
-    # ./i01.json ./i01_solution.json 0 ./callback.json ./parameter.json gt u
-    # $1         #$2                 $3 $4             $5               $6 $7
-    timeout $globalTimeOut ./start-args-gips.sh "$1" "$2" $randomSeed $callback $parameter $preprocessing $constraintCleanUp
-    if [ $? -eq 124 ]; then
-        echo "Global timelimit of ${globalTimeOut}s violated. GIPS run was killed before finishing."
-    fi
+    echo "# Script info: Running: $1"
+    echo "# Script info: Using global timeout: ${globalTimeOut}s"
+    TIMEFORMAT='# Script info: Process execution took %R seconds to complete.'
+    time {
+        # Arguments of the `start-args-gips.sh` script
+        # ./i01.json ./i01_solution.json 0  ./callback.json ./parameter.json gt u
+        # $1         #$2                 $3 $4              $5               $6 $7
+
+        # Run timeout in the background
+        timeout $globalTimeOut ./start-args-gips.sh "$1" "$2" $randomSeed $callback $parameter $preprocessing $constraintCleanUp &
+        # Assign timeout's PID to a variable
+        pid=$!
+        # Wait until timeout has finished
+        wait $pid
+        if [ $? -eq 124 ]; then
+            echo "# Script info: Timelimit of ${globalTimeOut}s for start args script violated. GIPS run was killed before finishing."
+        fi
+    }
 }
 
 echo "#"
 echo "# => Eval loop script start."
 echo "#"
 
-for ((i=1;i<=30;i++));
+for ((i=1;i<=1;i++));
 do
     if [ $i -lt 10 ]; then
-        echo "./ihtc2024_competition_instances/i0$i.json"
         run "./ihtc2024_competition_instances/i0$i.json" "./ihtc2024_competition_instances/i0${i}_solution.json"
     else
-        echo "./ihtc2024_competition_instances/i$i.json"
         run "./ihtc2024_competition_instances/i$i.json" "./ihtc2024_competition_instances/i${i}_solution.json"
     fi
 done
