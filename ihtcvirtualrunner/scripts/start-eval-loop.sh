@@ -20,7 +20,7 @@
 
 # Stop loop if CTRL + C gets pressed but run timeout still in the background
 # https://unix.stackexchange.com/a/57692
-trap 'kill -INT -$pid' INT
+trap 'kill -INT -$pid && exit 2' INT
 
 # Configuration taken by the arguments
 export randomSeed=$1
