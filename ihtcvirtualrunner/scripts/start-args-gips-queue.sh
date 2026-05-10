@@ -32,7 +32,7 @@ function run_experiment {
     TIMEFORMAT='# Script info: Process execution took %R seconds to complete.'
     time {
         # Run timeout in the background
-        timeout $globalTimeout java -Xmx240g -jar $JAR $ARGS &
+        timeout $globalTimeout java -Xmx240g -XX:+ExitOnOutOfMemoryError -jar $JAR $ARGS &
         # Assign timeout's PID to a variable
         pid=$!
         # Wait until timeout has finished
