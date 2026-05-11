@@ -3,9 +3,7 @@ package org.emoflon.gips.ihtc.virtual.runner;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -25,7 +23,6 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.emoflon.gips.core.api.GipsEngineAPI;
 import org.emoflon.gips.core.milp.SolverOutput;
-import org.emoflon.gips.core.util.IMeasurement;
 import org.emoflon.gips.core.util.Observer;
 import org.emoflon.gips.ihtc.virtual.runner.utils.FileUtils;
 import org.emoflon.smartemf.persistence.SmartEMFResourceFactoryImpl;
@@ -258,14 +255,6 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 		}
 		if (verbose) {
 			logger.info("=> Objective value: " + output.objectiveValue());
-			final Map<String, IMeasurement> measurements = new LinkedHashMap<>(
-					Observer.getInstance().getMeasurements("Eval"));
-			Observer.getInstance().getMeasurements("Eval").clear();
-			logger.info("PM: " + measurements.get("PM").maxDurationSeconds() + "s.");
-			logger.info("BUILD_GIPS: " + measurements.get("BUILD_GIPS").maxDurationSeconds() + "s.");
-			logger.info("BUILD_SOLVER: " + measurements.get("BUILD_SOLVER").maxDurationSeconds() + "s.");
-			logger.info("BUILD: " + measurements.get("BUILD").maxDurationSeconds() + "s.");
-			logger.info("SOLVE_PROBLEM: " + measurements.get("SOLVE_PROBLEM").maxDurationSeconds() + "s.");
 		}
 		return output.objectiveValue();
 	}
