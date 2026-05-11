@@ -220,17 +220,18 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 			final ExecutorService executor = Executors.newSingleThreadExecutor();
 			try {
 				// Schedule the GIPS build process
-				final List<Future<Object>> futures = executor.invokeAll(Arrays.asList(new GipsBuildWrapper(gipsApi)),
+				final List<Future<Observer>> futures = executor.invokeAll(Arrays.asList(new GipsBuildWrapper(gipsApi)),
 						buildTimeLimit, TimeUnit.SECONDS);
 				// If the executor returned more than one future, something is broken
 				if (futures.size() != 1) {
 					throw new InternalError();
 				}
-				final Future<Object> buildFuture = futures.get(0);
+				final Future<Observer> buildFuture = futures.get(0);
 
 				try {
 					// Wait for the build process to finish/time out
-					buildFuture.get();
+					final Observer buildObserver = buildFuture.get();
+					Observer.getInstance().merge(buildObserver);
 				} catch (CancellationException ex) {
 					// If the execution was cancelled, a time out occurred
 					logger.warning("GIPS build process violated the build time limit. "
@@ -480,7 +481,7 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 	/**
 	 * Wraps the GIPS build problem (timed) call into a `Callable` object.
 	 */
-	private class GipsBuildWrapper implements Callable<Object> {
+	private class GipsBuildWrapper implements Callable<Observer> {
 		/**
 		 * The GIPS API object to build the MILP problem with.
 		 */
@@ -499,12 +500,13 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 		/**
 		 * Call method to actually build the MILP problem. Always returns null.
 		 * 
-		 * @return null (in every case).
+		 * @return Observer from this Thread.
 		 */
 		@Override
-		public Object call() throws Exception {
+		public Observer call() throws Exception {
+			Observer.getInstance().setCurrentSeries("Eval");
 			gipsApi.buildProblemTimed(true, true);
-			return null;
+			return Observer.getInstance();
 		}
 	}
 
