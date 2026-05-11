@@ -117,12 +117,6 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 	public String debugOutputPath;
 
 	/**
-	 * Boolean flag that must be set to `true` once the GIPS build process has
-	 * finished.
-	 */
-	private boolean gipsBuildDone = false;
-
-	/**
 	 * Creates a new instance of this class, sets up the logging, and derives all
 	 * paths that depend on the scenario file name.
 	 */
@@ -476,15 +470,6 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 			throw new IllegalArgumentException("Given tick or tock was below zero.");
 		}
 		return 1.0 * (tock - tick) / 1_000_000_000;
-	}
-
-	/**
-	 * Returns true if the GIPS build process has finished.
-	 * 
-	 * @return True if the GIPS build process has finished.
-	 */
-	public boolean isGipsBuildDone() {
-		return this.gipsBuildDone;
 	}
 
 	/**
