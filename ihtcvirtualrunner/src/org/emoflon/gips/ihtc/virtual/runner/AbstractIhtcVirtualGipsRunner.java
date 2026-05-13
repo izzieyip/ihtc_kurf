@@ -3,9 +3,7 @@ package org.emoflon.gips.ihtc.virtual.runner;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
@@ -25,7 +23,6 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.emoflon.gips.core.api.GipsEngineAPI;
 import org.emoflon.gips.core.milp.SolverOutput;
-import org.emoflon.gips.core.util.IMeasurement;
 import org.emoflon.gips.core.util.Observer;
 import org.emoflon.gips.ihtc.virtual.runner.utils.FileUtils;
 import org.emoflon.smartemf.persistence.SmartEMFResourceFactoryImpl;
@@ -220,17 +217,18 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 			final ExecutorService executor = Executors.newSingleThreadExecutor();
 			try {
 				// Schedule the GIPS build process
-				final List<Future<Object>> futures = executor.invokeAll(Arrays.asList(new GipsBuildWrapper(gipsApi)),
+				final List<Future<Observer>> futures = executor.invokeAll(Arrays.asList(new GipsBuildWrapper(gipsApi)),
 						buildTimeLimit, TimeUnit.SECONDS);
 				// If the executor did not return exactly one future, something is broken
 				if (futures.size() != 1) {
 					throw new InternalError();
 				}
-				final Future<Object> buildFuture = futures.get(0);
+				final Future<Observer> buildFuture = futures.get(0);
 
 				try {
 					// Wait for the build process to finish/time out
-					buildFuture.get();
+					final Observer buildObserver = buildFuture.get();
+					Observer.getInstance().merge(buildObserver);
 				} catch (final CancellationException ex) {
 					// If the execution was cancelled, a time out occurred
 					logger.warning("GIPS build process violated the build time limit. "
@@ -261,14 +259,6 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 		}
 		if (verbose) {
 			logger.info("=> Objective value: " + output.objectiveValue());
-			final Map<String, IMeasurement> measurements = new LinkedHashMap<>(
-					Observer.getInstance().getMeasurements("Eval"));
-			Observer.getInstance().getMeasurements("Eval").clear();
-			logger.info("PM: " + measurements.get("PM").maxDurationSeconds() + "s.");
-			logger.info("BUILD_GIPS: " + measurements.get("BUILD_GIPS").maxDurationSeconds() + "s.");
-			logger.info("BUILD_SOLVER: " + measurements.get("BUILD_SOLVER").maxDurationSeconds() + "s.");
-			logger.info("BUILD: " + measurements.get("BUILD").maxDurationSeconds() + "s.");
-			logger.info("SOLVE_PROBLEM: " + measurements.get("SOLVE_PROBLEM").maxDurationSeconds() + "s.");
 		}
 		return output.objectiveValue();
 	}
@@ -494,7 +484,7 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 	/**
 	 * Wraps the GIPS build problem (timed) call into a `Callable` object.
 	 */
-	private class GipsBuildWrapper implements Callable<Object> {
+	private class GipsBuildWrapper implements Callable<Observer> {
 		/**
 		 * The GIPS API object to build the MILP problem with.
 		 */
@@ -513,12 +503,13 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 		/**
 		 * Call method to actually build the MILP problem. Always returns null.
 		 * 
-		 * @return null (in every case).
+		 * @return Observer from this Thread.
 		 */
 		@Override
-		public Object call() throws Exception {
+		public Observer call() throws Exception {
+			Observer.getInstance().setCurrentSeries("Eval");
 			gipsApi.buildProblemTimed(true, true);
-			return null;
+			return Observer.getInstance();
 		}
 	}
 
