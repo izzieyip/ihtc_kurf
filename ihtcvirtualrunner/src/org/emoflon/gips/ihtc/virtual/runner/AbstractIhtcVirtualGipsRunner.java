@@ -251,16 +251,22 @@ public abstract class AbstractIhtcVirtualGipsRunner {
 			gipsApi.buildProblemTimed(true, true);
 		}
 
-		final SolverOutput output = gipsApi.solveProblemTimed();
-		if (output.solutionCount() == 0) {
-			gipsApi.terminate();
-			logger.warning("No solution found. Aborting.");
-			throw new InternalError("No solution found!");
+		try (final SolverOutput output = gipsApi.solveProblemTimed()) {
+			if (output.solutionCount() == 0) {
+				gipsApi.terminate();
+				logger.warning("No solution found. Aborting.");
+				throw new InternalError("No solution found!");
+			}
+			if (verbose) {
+				logger.info("=> Objective value: " + output.objectiveValue());
+			}
+			return output.objectiveValue();
+		} catch (final OutOfMemoryError err) {
+			logger.warning("GIPS solving threw an OOM error. GIPS now terminates the Java process.");
+			System.exit(1);
 		}
-		if (verbose) {
-			logger.info("=> Objective value: " + output.objectiveValue());
-		}
-		return output.objectiveValue();
+		// The program will never get here.
+		return -1;
 	}
 
 	/**
