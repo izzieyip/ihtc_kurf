@@ -3,6 +3,7 @@
 	<name>ihtcvirtualpostprocessing</name>
 	<comment></comment>
 	<projects>
+		<project>ihtcvirtualmetamodel</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
