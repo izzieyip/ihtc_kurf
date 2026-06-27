@@ -256,8 +256,20 @@ public abstract class AbstractIhtcGipsRunner {
 			}
 			executor.shutdown();
 		} else {
-			gipsApi.buildProblemTimed(true, true); // Second Parameter: sequential = false/default, parallel = true
-			final SolverOutput output = gipsApi.solveProblemTimed();
+			// else: execute GIPS build normally
+			logger.info("Starting GIPS build without any time limit.");
+			// First parameter: do update
+			// Second parameter: parallel build
+			gipsApi.buildProblemTimed(true, true);
+
+		}
+		logObserverMeasurement("PM", verbose);
+		logObserverMeasurement("BUILD_GIPS", verbose);
+		logObserverMeasurement("BUILD_SOLVER", verbose);
+		logObserverMeasurement("BUILD", verbose);
+
+		try (final SolverOutput output = gipsApi.solveProblemTimed()) {
+			logObserverMeasurement("SOLVE_PROBLEM", verbose);
 			if (output.solutionCount() == 0) {
 				gipsApi.terminate();
 				logger.warning("No solution found. Aborting.");
@@ -265,16 +277,11 @@ public abstract class AbstractIhtcGipsRunner {
 			}
 			if (verbose) {
 				logger.info("=> Objective value: " + output.objectiveValue());
-				final Map<String, IMeasurement> measurements = new LinkedHashMap<>(
-						Observer.getInstance().getMeasurements("Eval"));
-				Observer.getInstance().getMeasurements("Eval").clear();
-				logger.info("PM: " + measurements.get("PM").maxDurationSeconds() + "s.");
-				logger.info("BUILD_GIPS: " + measurements.get("BUILD_GIPS").maxDurationSeconds() + "s.");
-				logger.info("BUILD_SOLVER: " + measurements.get("BUILD_SOLVER").maxDurationSeconds() + "s.");
-				logger.info("BUILD: " + measurements.get("BUILD").maxDurationSeconds() + "s.");
-				logger.info("SOLVE_PROBLEM: " + measurements.get("SOLVE_PROBLEM").maxDurationSeconds() + "s.");
 			}
 			return output.objectiveValue();
+		} catch (final OutOfMemoryError err) {
+			logger.warning("GIPS solving threw an OOM error. GIPS now terminates the Java process.");
+			System.exit(1);
 		}
 		// The program will never get here.
 		return -1;
