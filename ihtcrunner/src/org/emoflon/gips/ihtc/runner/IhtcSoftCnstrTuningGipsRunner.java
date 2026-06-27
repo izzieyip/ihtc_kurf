@@ -123,7 +123,7 @@ public class IhtcSoftCnstrTuningGipsRunner extends AbstractIhtcGipsRunner {
 		exportToJson(gipsOutputPath, outputPath);
 		exportMeasurement.stop();
 		Observer.getInstance().addMeasurement("Eval", "EXPORT", exportMeasurement);
-		logObserverMeasurement(callbackPath, verbose);
+		logObserverMeasurement("EXPORT", verbose);
 
 		//
 		// The end
