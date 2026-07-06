@@ -22,18 +22,19 @@ import java.util.Map
  * 
  */
 class VirtualNode {
-    public String className
+    public String name
     public String sourceReference
     public String targetReference
+    public String sourceEdge
+    public String targetEdge
     
     new(String className) {
-        this.className = className
+        this.name = className
     }
 }
 
 /**
- * Generates a FULLY GENERIC Java Postprocessor based on ecore annotations.
- * Extended to generate full virtual node processing logic.
+ * Generates a Java Postprocessor based on ecore annotations.
  */
 class JavaPostprocessorGenerator {
     
@@ -125,6 +126,10 @@ class JavaPostprocessorGenerator {
                         virtualNode.sourceReference = value
                     } else if (key == "targetReference") {
                         virtualNode.targetReference = value
+                    } else if (key == "sourceEdgeReference") {
+                    	virtualNode.sourceEdge = value
+                    }  if (key == "targetEdgeReference") {
+                    	virtualNode.targetEdge = value
                     }
                 }
                 
@@ -149,6 +154,7 @@ class JavaPostprocessorGenerator {
         package «packageName»;
         
         import java.io.IOException;
+        import java.lang.reflect.Method;
         import java.util.Objects;
         import java.util.logging.ConsoleHandler;
         import java.util.logging.Formatter;
@@ -176,9 +182,9 @@ class JavaPostprocessorGenerator {
          * 
          * This class processes virtual nodes from the model:
          *   1. Loads the XMI model
-         *   2. Finds all virtual node instances using EcoreUtil
-         *   3. For each virtual node, extracts source and target objects
-         *   4. Deletes all virtual nodes (EcoreUtil handles edge cleanup)
+         *   2. Finds all virtual node instances
+         *   3. If selected, produce derived edges between source and target
+         *   4. Deletes all virtual nodes
          *   5. Saves the transformed model
          */
         public class JavaPostprocessor {
@@ -255,7 +261,7 @@ class JavaPostprocessorGenerator {
                 	EObject obj = iterator.next();
                     String className = obj.eClass().getName();
                     
-                    logger.info("  Processing all virtual nodes... ");
+                    logger.info(className);
                     «generateVirtualNodeChecks(virtualNodes)»
                 }
                 
@@ -304,8 +310,8 @@ class JavaPostprocessorGenerator {
         
         for (vn : virtualNodes) {
             sb.append('''
-                    if (className.equals("«vn.className»")) {
-                        process_«vn.className»(obj);
+                    if (className.equals("«vn.name»")) {
+                        process_«vn.name»(obj);
                         virtualNodesToDelete.add(obj);
                     } else ''')
         }
@@ -320,62 +326,84 @@ class JavaPostprocessorGenerator {
     }
     
     /**
+     * Creates derived edges if virtual node is selected
      * 
-     * TODO:  Implement logic for adding derived edges
+     * Uses getDerived.add(target) if derived edge is a collection
+     * Uses setDerived(target) if derived edge is singular
      */
     private def String generateProcessMethods(List<VirtualNode> virtualNodes) {
-        val methods = new StringBuilder()
-        
-        for (vnInfo : virtualNodes) {
+    val methods = new StringBuilder()
+    
+    for (vn : virtualNodes) {
+            
             methods.append('''
-            /**
-             * Process a single virtual node instance of type «vnInfo.className»
-             * Extracts source and target objects for later use
-             */
-            private void process_«vnInfo.className»(EObject virtualNode) {
+            private void process_«vn.name»(EObject virtualNode) {
                 try {
-                    // Get the source and target references using Ecore feature names
-                    EStructuralFeature sourceRef = virtualNode.eClass()
-                        .getEStructuralFeature("«vnInfo.sourceReference»");
-                    EStructuralFeature targetRef = virtualNode.eClass()
-                        .getEStructuralFeature("«vnInfo.targetReference»");
-                    
-                    if (sourceRef == null || targetRef == null) {
-                        logger.warning("    ERROR: Could not find source or target reference for «vnInfo.className»");
-                        if (sourceRef == null) {
-                            logger.warning("      Missing sourceReference: «vnInfo.sourceReference»");
-                        }
-                        if (targetRef == null) {
-                            logger.warning("      Missing targetReference: «vnInfo.targetReference»");
-                        }
-                        return;
-                    }
-                    
-                    // Get the actual source and target objects using eGet()
-                    EObject source = (EObject) virtualNode.eGet(sourceRef);
-                    EObject target = (EObject) virtualNode.eGet(targetRef);
+                    «vn.name» vNode = («vn.name») virtualNode;
+                    Object source = vNode.get«vn.sourceReference.toFirstUpper»();
+                    Object target = vNode.get«vn.targetReference.toFirstUpper»();
                     
                     if (source == null || target == null) {
-                        logger.warning("    WARNING: source or target is null for «vnInfo.className» instance");
+                        logger.warning("  ERROR: source or target is null");
                         return;
                     }
                     
-                    // Virtual node processed successfully
-                    logger.fine("    Processed «vnInfo.className» instance");
-                    logger.fine("      Source: " + source.eClass().getName());
-                    logger.fine("      Target: " + target.eClass().getName());
-                    
+                    if (vNode.isIsSelected()) {
+	                    Method sourceGetter = source.getClass()
+	                        .getMethod("get«vn.sourceEdge.toFirstUpper»");
+	                    Object sourceEdgeValue = sourceGetter.invoke(source);
+	                    
+	                    if (sourceEdgeValue instanceof java.util.Collection collection) {
+	                        collection.add(target);
+	                        logger.info("    Added to source.«vn.sourceEdge»");
+	                    } else {
+	                    	Method setMethod = null;
+	                    	for (Method method : source.getClass().getMethods()) {
+	                    		if (method.getName().equals("set«vn.sourceEdge.toFirstUpper»")) {
+	                    		setMethod = method;
+	                    		break;
+	                    		}
+	                    	}
+	                    		                            
+	                    	if (setMethod != null) {
+	                    		setMethod.invoke(source, target);
+	                    		logger.info("    Set source.«vn.sourceEdge»");
+	                    	}
+	                    }
+	                    
+	                    Method targetGetter = target.getClass()
+	                        .getMethod("get«vn.targetEdge.toFirstUpper»");
+	                    Object targetEdgeValue = targetGetter.invoke(target);
+	                    
+	                    if (targetEdgeValue instanceof java.util.Collection collection) {
+	                        collection.add(source);
+	                        logger.info("    Added to target.«vn.targetEdge»");
+	                    } else {
+	                        Method setMethod = null;
+	                        for (Method method : target.getClass().getMethods()) {
+				            	if (method.getName().equals("set«vn.targetEdge.toFirstUpper»")) {
+	                           		setMethod = method;
+	                            	break;
+	                        	}
+	                    	}
+	                            
+	                    	if (setMethod != null) {
+	                        	setMethod.invoke(target, source);
+	                        	logger.info("    Set target.«vn.targetEdge»");
+	                    	}
+	                    }
+                    }
+                 
                 } catch (Exception e) {
-                    logger.warning("    Exception processing «vnInfo.className»: " + e.getMessage());
+                    logger.warning("  Exception in process_«vn.name»: " + e.getMessage());
                     e.printStackTrace();
                 }
             }
-            
             ''')
-        }
-        
-        return methods.toString()
     }
+    
+    return methods.toString()
+}
     
     /**
      * Load the Ecore metamodel
