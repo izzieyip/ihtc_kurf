@@ -80,10 +80,6 @@ public class JavaPostprocessor {
             logger.warning("IOException: " + e.getMessage());
             e.printStackTrace();
             System.exit(1);
-        } catch (final Exception e) {
-            logger.warning("Error: " + e.getMessage());
-            e.printStackTrace();
-            System.exit(1);
         }
     }
     
@@ -103,7 +99,6 @@ public class JavaPostprocessor {
         	EObject obj = iterator.next();
         	   String className = obj.eClass().getName();
         	   
-        	   logger.info(className);
         	   if (className.equals("VirtualShiftToWorkload")) {
         	     process_VirtualShiftToWorkload(obj);
         	     virtualNodesToDelete.add(obj);

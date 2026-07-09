@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EPackage;
@@ -16,10 +16,18 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
+
+/**
+ * Generator to automatically produce an Emoflon set of post-processing GT rules, given a virtual metamodel.
+ */
 public class GTRuleAutomator {
 	
 	private EPackage metamodel;
 	private StringBuilder gtContent;
+	private String ecorePath;
+	private static int id = 1; 
+	
+	protected final Logger logger = Logger.getLogger(GTRuleAutomator.class.getName());
 	
 	static class VirtualNodeInfo {
 		String className;
@@ -48,22 +56,22 @@ public class GTRuleAutomator {
 	/**
 	 * Constructor - loads the metamodel
 	 */
-	public GTRuleAutomator() throws IOException {
-		this.metamodel = loadEcoreMetamodel();
+	public GTRuleAutomator(String inputPath) throws IOException {
+		this.ecorePath = inputPath;
+		this.metamodel = loadEcoreMetamodel(ecorePath);
 		this.gtContent = new StringBuilder();
 		
 		System.out.println("Metamodel loaded: " + metamodel.getName());
 		System.out.println("Number of classes: " + metamodel.getEClassifiers().size());
 	}
 
-    private EPackage loadEcoreMetamodel() throws IOException {
+    private EPackage loadEcoreMetamodel(String path) throws IOException {
         ResourceSet resourceSet = new ResourceSetImpl();
         resourceSet.getResourceFactoryRegistry()
             .getExtensionToFactoryMap()
             .put("ecore", new EcoreResourceFactoryImpl());
         
-        String ecorePath = "../ihtcvirtualmetamodel/model/Ihtcvirtualmetamodel.ecore";
-        File ecoreFile = new File(ecorePath);
+        File ecoreFile = new File(path);
         
         if (!ecoreFile.exists()) {
             throw new IOException("File not found: " + ecoreFile.getAbsolutePath());
@@ -80,7 +88,7 @@ public class GTRuleAutomator {
      */
     public void generateRules() {
     	gtContent.setLength(0); 
-        gtContent.append("import \"platform:/resource/ihtcvirtualmetamodel/model/Ihtcvirtualmetamodel.ecore\"\n\n");
+        gtContent.append("import \"platform:/resource/" + ecorePath + "\"\n\n");
         
         for (EClassifier classifier : metamodel.getEClassifiers()) {
             if (classifier instanceof EClass) {
@@ -128,7 +136,7 @@ public class GTRuleAutomator {
         // Convert to camelCase
         String camelCaseClass = info.className.substring(0, 1).toLowerCase() + 
                                 info.className.substring(1);
-        String ruleName = camelCaseClass + "_to_derived";
+        String ruleName = camelCaseClass + "ToDerived";
         
         String vVar = getVariableName(info.className);
         String sourceVar = getVariableName(info.sourceClass);
@@ -196,10 +204,13 @@ public class GTRuleAutomator {
     }
     
     /**
-     * Get a short variable name (e.g., "Shift" -> "s", "Workload" -> "w")
+     * Get a short variable name (e.g., "Shift" -> "s_1", "Workload" -> "w_2")
+     * Each name will be unique by the incremented static class id attribute
      */
     private String getVariableName(String className) {
-        return className.substring(0, 1).toLowerCase();
+    	String uniqueVar = className.substring(0, 1).toLowerCase() + "_" + id;
+    	id++;
+        return uniqueVar;
     }
     
     /**
@@ -219,20 +230,20 @@ public class GTRuleAutomator {
     }
     
     /**
-     * Get the generated GT content as string
-     */
-    public String getGTContent() {
-        return gtContent.toString();
-    }
-    
-    /**
      * Main method - creates instance and runs automator
+     * 
+     * Suggested arguments:
+     * "../ihtcvirtualmetamodel/model/Ihtcvirtualmetamodel.ecore"
+     * "src/ihtcvirtualpostprocessing/PostProcessingGTRules.gt"
      */
     public static void main(String[] args) throws IOException {
-        GTRuleAutomator automator = new GTRuleAutomator();
+    	if (args.length < 2) {
+    		System.out.println("Missing arguments - [input ecore path, output GT path]");
+    	}
+        GTRuleAutomator automator = new GTRuleAutomator(args[0]);
         
         automator.generateRules();
-        automator.writeToFile("src/ihtcvirtualpostprocessing/PostProcessingGTRules.gt");
+        automator.writeToFile(args[1]);
         
         System.out.println("GT Rules generated successfully");
     }

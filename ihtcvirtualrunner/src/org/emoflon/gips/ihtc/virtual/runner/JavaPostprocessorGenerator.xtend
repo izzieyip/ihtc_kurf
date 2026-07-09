@@ -52,24 +52,23 @@ class JavaPostprocessorGenerator {
 	 * Example arguments:
 	 * org.emoflon.gips.ihtc.virtual.runner
 	 * src/org/emoflon/gips/ihtc/virtual/runner/JavaPostprocessor.java
+	 * ../ihtcvirtualmetamodel/model/Ihtcvirtualmetamodel.ecore
 	 */
 	def static void main(String[] args) throws Exception {
-		if (args.length < 2) {
+		if (args.length < 3) {
 			System.err.println("Program missing arguments. Arguments should be:")
 			System.err.println("1. Output package (e.g org.emoflon.gips.ihtc.virtual.postprocessor)")
 			System.err.println("2. Output file path")
+			System.err.println("2. Ecore file path")
 			System.exit(1)
 		}
 
-		val outputPackage = args.get(0)
-		val outputFilePath = args.get(1)
-
-		new JavaPostprocessorGenerator(outputPackage, outputFilePath)
+		new JavaPostprocessorGenerator(args.get(0), args.get(1), args.get(2))
 	}
 
-	new(String outputPackage, String outputFilePath) throws Exception {
+	new(String outputPackage, String outputFilePath, String ecoreFilePath) throws Exception {
 
-		metamodel = loadEcoreMetamodel()
+		metamodel = loadEcoreMetamodel(ecoreFilePath)
 		metamodelPackageName = inferMetamodelPackageName(metamodel)
 		rootClassName = findRootClassName(metamodel)
 		newFileName = extractClassNameFromPath(outputFilePath)
@@ -210,10 +209,6 @@ class JavaPostprocessorGenerator {
 			            logger.warning("IOException: " + e.getMessage());
 			            e.printStackTrace();
 			            System.exit(1);
-			        } catch (final Exception e) {
-			            logger.warning("Error: " + e.getMessage());
-			            e.printStackTrace();
-			            System.exit(1);
 			        }
 			    }
 			    
@@ -233,7 +228,6 @@ class JavaPostprocessorGenerator {
 			        	EObject obj = iterator.next();
 			        	   String className = obj.eClass().getName();
 			        	   
-			        	   logger.info(className);
 			        	   «generateVirtualNodeChecks(virtualNodes)»
 			        }
 			        
@@ -330,11 +324,10 @@ class JavaPostprocessorGenerator {
 	/**
 	 * Load the Ecore metamodel
 	 */
-	private def EPackage loadEcoreMetamodel() throws IOException {
+	private def EPackage loadEcoreMetamodel(String ecorePath) throws IOException {
 		val ResourceSet resourceSet = new ResourceSetImpl()
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl())
-
-		val String ecorePath = "../ihtcvirtualmetamodel/model/Ihtcvirtualmetamodel.ecore"
+		
 		val File ecoreFile = new File(ecorePath)
 
 		if (!ecoreFile.exists()) {
