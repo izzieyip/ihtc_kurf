@@ -1,25 +1,18 @@
 package org.emoflon.gips.ihtc.virtual.runner
 
-import org.eclipse.emf.ecore.EPackage
-import org.eclipse.emf.ecore.EClass
-import org.eclipse.emf.ecore.EAnnotation
-import org.eclipse.emf.ecore.EReference
-import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl
-import org.eclipse.emf.common.util.URI
-import org.eclipse.emf.ecore.resource.Resource
-import org.eclipse.emf.ecore.resource.ResourceSet
-import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
-import java.util.ArrayList
 import java.util.List
-import java.util.HashMap
-import java.util.Map
-import org.eclipse.emf.ecore.EObject
 import java.util.logging.Logger
-import ihtcvirtualpostprocessing.GTRuleAutomator
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.EClass
+import org.eclipse.emf.ecore.EPackage
+import org.eclipse.emf.ecore.resource.Resource
+import org.eclipse.emf.ecore.resource.ResourceSet
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
+import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl
 
 /**
  * Simple Virtual Node object class to store eAnnotations
@@ -69,8 +62,7 @@ class JavaPostprocessorGenerator {
 	new(String outputPackage, String outputFilePath, String ecoreFilePath) throws Exception {
 
 		metamodel = loadEcoreMetamodel(ecoreFilePath)
-		metamodelPackageName = inferMetamodelPackageName(metamodel)
-		rootClassName = findRootClassName(metamodel)
+		metamodelPackageName = metamodel.name.toLowerCase
 		newFileName = extractClassNameFromPath(outputFilePath)
 		println("Metamodel loaded \n")
 
@@ -144,7 +136,7 @@ class JavaPostprocessorGenerator {
 			import org.emoflon.smartemf.persistence.SmartEMFResourceFactoryImpl;
 			
 			import «metamodelPackageName».«toTitleCase(metamodelPackageName)»Package;
-			import «metamodelPackageName».«rootClassName»;
+			import «metamodelPackageName».Root;
 			import «metamodelPackageName».utils.FileUtils;
 			import «metamodelPackageName».*;
 			
@@ -341,15 +333,8 @@ class JavaPostprocessorGenerator {
 	}
 
 	/**
-	 * Infer the metamodel package name from the EPackage itself
-	 */
-	private def String inferMetamodelPackageName(EPackage ePackage) {
-		return ePackage.name.toLowerCase
-	}
-
-	/**
 	 * Convert package name to title case for class names
-	 * "ihtcvirtualmetamodel" → "Ihtcvirtualmetamodel"
+	 * "ihtcvirtualmetamodel" -> "Ihtcvirtualmetamodel"
 	 */
 	private def String toTitleCase(String packageName) {
 		if(packageName === null || packageName.isEmpty()) return packageName
@@ -357,25 +342,7 @@ class JavaPostprocessorGenerator {
 	}
 
 	/**
-	 * Find the Root class in the metamodel
-	 */
-	private def String findRootClassName(EPackage ePackage) {
-		val rootClass = ePackage.eAllContents.filter(EClass).findFirst[name == "Root"]
-
-		if (rootClass !== null) {
-			return rootClass.name
-		}
-
-		// Fallback: return the first EClass
-		val firstClass = ePackage.eAllContents.filter(EClass).head
-
-		return if(firstClass !== null) firstClass.name else "Root"
-	}
-
-	/**
-	 * Extract class name from the output file path
-	 * From "src/org/emoflon/gips/ihtc/virtual/runner/JavaPostprocessor.java"
-	 * Returns "JavaPostprocessor"
+	 * Get the class name from the given output file path
 	 */
 	private def String extractClassNameFromPath(String outputFilePath) {
 		val fileName = Paths.get(outputFilePath).getFileName().toString()
