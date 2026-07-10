@@ -36,10 +36,7 @@ class JavaPostprocessorGenerator {
 
 	static var EPackage metamodel;
 	static var String metamodelPackageName
-	static var String rootClassName
 	static var String newFileName
-
-	static val Logger logger = Logger.getLogger(JavaPostprocessorGenerator.getName())
 
 	/**
 	 * Example arguments:
@@ -319,7 +316,7 @@ class JavaPostprocessorGenerator {
 	private def EPackage loadEcoreMetamodel(String ecorePath) throws IOException {
 		val ResourceSet resourceSet = new ResourceSetImpl()
 		resourceSet.getResourceFactoryRegistry().getExtensionToFactoryMap().put("ecore", new EcoreResourceFactoryImpl())
-		
+
 		val File ecoreFile = new File(ecorePath)
 
 		if (!ecoreFile.exists()) {

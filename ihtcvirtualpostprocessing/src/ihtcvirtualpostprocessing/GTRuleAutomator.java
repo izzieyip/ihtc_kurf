@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EClassifier;
@@ -87,8 +88,7 @@ public class GTRuleAutomator {
      * Generate all rules from virtual node annotations
      */
     public void generateRules() {
-    	gtContent.setLength(0); 
-        gtContent.append("import \"platform:/resource/" + ecorePath + "\"\n\n");
+        gtContent.append("import \"platform:/resource/" + StringUtils.stripStart(ecorePath, "./") + "\"\n\n");
         
         for (EClassifier classifier : metamodel.getEClassifiers()) {
             if (classifier instanceof EClass) {
@@ -152,8 +152,8 @@ public class GTRuleAutomator {
             //
             rule %s {
             \t-- %s : %s {
-            \t\t---%s -> %s
-            \t\t---%s -> %s
+            \t\t-- -%s -> %s
+            \t\t-- -%s -> %s
             \t}
 
             \t%s : %s {
@@ -208,7 +208,7 @@ public class GTRuleAutomator {
      * Each name will be unique by the incremented static class id attribute
      */
     private String getVariableName(String className) {
-    	String uniqueVar = className.substring(0, 1).toLowerCase() + "_" + id;
+    	String uniqueVar = className.substring(0, 1).toLowerCase();
     	id++;
         return uniqueVar;
     }
@@ -238,7 +238,7 @@ public class GTRuleAutomator {
      */
     public static void main(String[] args) throws IOException {
     	if (args.length < 2) {
-    		System.out.println("Missing arguments - [input ecore path, output GT path]");
+    		throw new IllegalArgumentException("Missing arguments - [input ecore path, output GT path]");
     	}
         GTRuleAutomator automator = new GTRuleAutomator(args[0]);
         
