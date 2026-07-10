@@ -12,7 +12,7 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 /**
- * Extends a domain metamodel .ecore file to include virtual node/eClasses
+ * Extends a domain metamodel .ecore file to include virtual eClasses
  * Currently only creates virtual nodes with all references set between
  * source/target classes, but not between virtual nodes.
  * 
