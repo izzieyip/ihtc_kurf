@@ -185,8 +185,9 @@ class GTRuleAutomation {
 	 * Each name will be unique by the incremented static class id attribute
 	 */
 	private def getVariableName(String className) {
-		val uniqueVar = className.substring(0, 1).toLowerCase
-		id++
+		val varName = className.substring(0, 1).toLowerCase
+		val uniqueVar = varName + "_" + id++;
+
 		return uniqueVar
 	}
 
