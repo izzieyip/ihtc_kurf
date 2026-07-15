@@ -12,6 +12,10 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl
+import java.util.logging.ConsoleHandler
+import java.util.logging.Formatter
+import java.util.logging.LogRecord
+import java.util.Objects
 
 /**
  * Generator to automatically produce an Emoflon set of post-processing GT rules, given a virtual metamodel.
@@ -22,7 +26,7 @@ class GTRuleAutomation {
 	String ecorePath
 	static int id = 1
 
-	protected val logger = Logger.getLogger(GTRuleAutomation.name)
+	protected static val logger = Logger.getLogger(GTRuleAutomation.name)
 
 	static class VirtualNodeInfo {
 		String className
@@ -52,11 +56,12 @@ class GTRuleAutomation {
 	 * Constructor - loads the metamodel
 	 */
 	new(String inputPath) throws IOException {
+		configureLogging();
 		this.ecorePath = inputPath
 		this.metamodel = loadEcoreMetamodel(ecorePath)
 
-		System.out.println("Metamodel loaded: " + metamodel.name)
-		System.out.println("Number of classes: " + metamodel.EClassifiers.size)
+		logger.info("Metamodel loaded: " + metamodel.name)
+		logger.info("Number of classes: " + metamodel.EClassifiers.size)
 	}
 
 	private def EPackage loadEcoreMetamodel(String path) throws IOException {
@@ -85,7 +90,7 @@ class GTRuleAutomation {
 	'''
 
 	private def generateEClassRules(EClass eClass) {
-		System.out.println("Checking class: " + eClass.name)
+		logger.info("Checking class: " + eClass.name)
 		val info = getVirtualNodeInfo(eClass)
 
 		if (info !== null)
@@ -119,9 +124,9 @@ class GTRuleAutomation {
 			}
 		}
 
-		System.out.println("Checking class: " + eClass.name + " | Annotations: " + eClass.EAnnotations.size)
+		logger.info("Checking class: " + eClass.name + " | Annotations: " + eClass.EAnnotations.size)
 		for (EAnnotation annotation : eClass.EAnnotations) {
-			System.out.println("  Found annotation: " + annotation.source)
+			logger.info("  Found annotation: " + annotation.source)
 		}
 		return null
 	}
@@ -202,7 +207,7 @@ class GTRuleAutomation {
 		}
 
 		Files.write(path, generateRules.toString.bytes)
-		System.out.println("\nGenerated at: " + outputPath)
+		logger.info("\nGenerated at: " + outputPath)
 	}
 
 	/**
@@ -220,6 +225,22 @@ class GTRuleAutomation {
 
 		automator.writeToFile(args.get(1))
 
-		System.out.println("GT Rules generated successfully")
+		logger.info("GT Rules generated successfully")
+	}
+	
+	/**
+	 * Configures the logging of this class.
+	 */
+	def static void configureLogging() {
+		// Configure logging
+		logger.setUseParentHandlers(false);
+		val ConsoleHandler handler = new ConsoleHandler();
+		handler.setFormatter(new Formatter() {
+			override String format(LogRecord record) {
+				Objects.requireNonNull(record, "Given log entry was null.");
+				return record.getMessage() + System.lineSeparator();
+			}
+		});
+		logger.addHandler(handler);
 	}
 }
