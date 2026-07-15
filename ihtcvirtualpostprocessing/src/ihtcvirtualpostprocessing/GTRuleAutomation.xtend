@@ -215,7 +215,7 @@ class GTRuleAutomation {
 		if (args.length < 2) {
 			throw new IllegalArgumentException("Missing arguments - [input ecore path, output GT path]")
 		}
-		val automator = new GTRuleAutomator(args.get(0))
+		val automator = new GTRuleAutomation(args.get(0))
 
 		automator.writeToFile(args.get(1))
 
