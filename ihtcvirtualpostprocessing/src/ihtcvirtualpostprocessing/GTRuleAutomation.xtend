@@ -81,7 +81,7 @@ class GTRuleAutomation {
 	def generateRules() '''
 		import "platform:/resource/«StringUtils.stripStart(ecorePath, "./")»"
 		
-		«metamodel.EClassifiers.filter(EClass).map[generateEClassRules].join('\n')»
+		«metamodel.EClassifiers.filter(EClass).map[generateEClassRules].filter[!empty] .join('\n')»
 	'''
 
 	private def generateEClassRules(EClass eClass) {
