@@ -20,13 +20,13 @@ import java.util.Objects
 /**
  * Generator to automatically produce an Emoflon set of post-processing GT rules, given a virtual metamodel.
  */
-class GTRuleAutomation {
+class GTRuleAutomator {
 
 	EPackage metamodel
 	String ecorePath
 	static int id = 1
 
-	protected static val logger = Logger.getLogger(GTRuleAutomation.name)
+	protected static val logger = Logger.getLogger(GTRuleAutomator.name)
 
 	static class VirtualNodeInfo {
 		String className
@@ -221,7 +221,7 @@ class GTRuleAutomation {
 		if (args.length < 2) {
 			throw new IllegalArgumentException("Missing arguments - [input ecore path, output GT path]")
 		}
-		val automator = new GTRuleAutomation(args.get(0))
+		val automator = new GTRuleAutomator(args.get(0))
 
 		automator.writeToFile(args.get(1))
 
