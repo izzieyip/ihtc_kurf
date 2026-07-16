@@ -1,5 +1,6 @@
 package ihtcvirtualpostprocessing
 
+import gips.examples.dependencies.GipsExamplesLogger
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -13,10 +14,6 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl
-import java.util.logging.ConsoleHandler
-import java.util.logging.Formatter
-import java.util.logging.LogRecord
-import java.util.Objects
 
 /**
  * Simple Virtual Node object class to store eAnnotations
@@ -41,7 +38,7 @@ class JavaPostprocessorGenerator {
 	static var EPackage metamodel;
 	static var String metamodelPackageName
 	static var String newFileName
-	
+
 	protected static val logger = Logger.getLogger(JavaPostprocessorGenerator.name)
 
 	/**
@@ -63,7 +60,7 @@ class JavaPostprocessorGenerator {
 	}
 
 	new(String outputPackage, String outputFilePath, String ecoreFilePath) throws Exception {
-		configureLogging();
+		GipsExamplesLogger.configureLogging(logger)
 		metamodel = loadEcoreMetamodel(ecoreFilePath)
 		metamodelPackageName = metamodel.name.toLowerCase
 		newFileName = extractClassNameFromPath(outputFilePath)
@@ -351,21 +348,5 @@ class JavaPostprocessorGenerator {
 		val fileName = Paths.get(outputFilePath).getFileName().toString()
 		return fileName.substring(0, fileName.lastIndexOf('.'))
 	}
-	
-	/**
-	 * Configures the logging of this class.
-	 */
-	def static void configureLogging() {
-		// Configure logging
-		logger.setUseParentHandlers(false);
-		val ConsoleHandler handler = new ConsoleHandler();
-		handler.setFormatter(new Formatter() {
-			override String format(LogRecord record) {
-				Objects.requireNonNull(record, "Given log entry was null.");
-				return record.getMessage() + System.lineSeparator();
-			}
-		});
-		logger.addHandler(handler);
-	}
-	
+
 }

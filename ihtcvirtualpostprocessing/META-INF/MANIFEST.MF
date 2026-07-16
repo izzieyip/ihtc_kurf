@@ -14,7 +14,8 @@ Require-Bundle: org.emoflon.ibex.common,
  org.emoflon.ibex.patternmodel,
  org.emoflon.ibex.gt.democles,
  org.emoflon.ibex.gt.hipe,
- ihtcvirtualmetamodel;bundle-version="0.0.1"
+ ihtcvirtualmetamodel;bundle-version="0.0.1",
+ gips.examples.dependencies;bundle-version="1.0.0"
 Export-Package: ihtcvirtualpostprocessing,
  ihtcvirtualpostprocessing.api,
  ihtcvirtualpostprocessing.api.matches,

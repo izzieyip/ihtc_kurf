@@ -7,11 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Formatter;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.URI;
@@ -26,6 +22,8 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
+
+import gips.examples.dependencies.GipsExamplesLogger;
 
 /**
  * Extends a domain metamodel .ecore file to include virtual eClasses
@@ -44,7 +42,7 @@ public class MetamodelExtender {
 	protected static final Logger logger = Logger.getLogger(MetamodelExtender.class.getName());
 
 	static {
-		configureLogging(logger);
+		GipsExamplesLogger.configureLogging(logger);
 	}
 
 	private MetamodelExtender(EPackage ePackage) {
@@ -281,24 +279,6 @@ public class MetamodelExtender {
 		Resource resource = resourceSet.createResource(uri);
 		resource.getContents().add(ePackage);
 		resource.save(Collections.emptyMap());
-	}
-
-	public static void configureLogging(final Logger logger) {
-		Objects.requireNonNull(logger);
-
-		// Configure logging
-		logger.setUseParentHandlers(false);
-		final ConsoleHandler handler = new ConsoleHandler();
-		handler.setFormatter(new Formatter() {
-			@Override
-			public String format(final LogRecord record) {
-				Objects.requireNonNull(record, "Given log entry was null.");
-				return record.getMessage() + System.lineSeparator();
-			}
-		});
-		if (logger.getHandlers().length == 0) {
-			logger.addHandler(handler);
-		}
 	}
 
 }
