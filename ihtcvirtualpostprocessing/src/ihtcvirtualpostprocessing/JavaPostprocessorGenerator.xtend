@@ -1,4 +1,4 @@
-package org.emoflon.gips.ihtc.virtual.runner
+package ihtcvirtualpostprocessing
 
 import java.io.File
 import java.io.IOException
@@ -46,8 +46,8 @@ class JavaPostprocessorGenerator {
 
 	/**
 	 * Example arguments:
-	 * org.emoflon.gips.ihtc.virtual.runner
-	 * src/org/emoflon/gips/ihtc/virtual/runner/JavaPostprocessor.java
+	 * ihtcvirtualpostprocessing
+	 * src/ihtcvirtualpostprocessing/JavaPostprocessor.java
 	 * ../ihtcvirtualmetamodel/model/Ihtcvirtualmetamodel.ecore
 	 */
 	def static void main(String[] args) throws Exception {
