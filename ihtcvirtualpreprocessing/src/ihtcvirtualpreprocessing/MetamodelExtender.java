@@ -2,10 +2,21 @@ package ihtcvirtualpreprocessing;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.emf.common.util.URI;
-import org.eclipse.emf.ecore.*;
+import org.eclipse.emf.ecore.EAnnotation;
+import org.eclipse.emf.ecore.EAttribute;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.EcoreFactory;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
@@ -13,6 +24,7 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
 /**
  * Extends a domain metamodel .ecore file to include virtual eClasses
+ * 
  * Currently only creates virtual nodes with all references set between
  * source/target classes, but not between virtual nodes.
  * 
@@ -28,6 +40,13 @@ public class MetamodelExtender {
 		this.ePackage = ePackage;
 	}
 
+	/**
+	 * Main method - creates virtual node classes within the given metamodel .ecore
+	 * file.
+	 * 
+	 * Suggested arguments: "../ihtcdomainmetamodel/model/Ihtcdomainmetamodel.ecore"
+	 * "../ihtcdomainmetamodel/model/Ihtcdomainmetamodel_gen.ecore"
+	 */
 	public static void main(String[] args) throws IOException {
 		if (args.length < 2) {
 			throw new IllegalArgumentException("Missing arguments - [input ecore path, output ecore path]");
