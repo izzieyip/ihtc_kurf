@@ -189,12 +189,9 @@ class GTRuleAutomator {
 	 * Get a short variable name (e.g., "Shift" -> "s", "Workload" -> "w")
 	 * Each name will be unique by the incremented static class id attribute
 	 */
-	private def getVariableName(String className) {
-		val varName = className.substring(0, 1).toLowerCase
-		val uniqueVar = varName + id++;
-
-		return uniqueVar
-	}
+	private def getVariableName(String className) '''
+	    «className.substring(0, 1).toLowerCase»«id++»
+	'''
 
 	/**
 	 * Write the generated GT rules to a file
