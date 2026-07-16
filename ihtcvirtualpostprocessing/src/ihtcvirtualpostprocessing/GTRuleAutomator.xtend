@@ -191,7 +191,7 @@ class GTRuleAutomator {
 	 */
 	private def getVariableName(String className) {
 		val varName = className.substring(0, 1).toLowerCase
-		val uniqueVar = varName + "_" + id++;
+		val uniqueVar = varName + id++;
 
 		return uniqueVar
 	}
