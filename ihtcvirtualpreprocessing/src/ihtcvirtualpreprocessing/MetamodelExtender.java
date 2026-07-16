@@ -7,7 +7,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Formatter;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAnnotation;
@@ -29,12 +34,18 @@ import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
  * source/target classes, but not between virtual nodes.
  * 
  * TODO : Use domain GT rules to add dependencies (requires/enables) to virtual
- * nodes Would require using the Ihtpdomaingtrules API
+ * nodes (would require using the Ihtpdomaingtrules API)
  */
 public class MetamodelExtender {
 
 	private static final String VIRTUAL_ANNOTATION_SOURCE = "virtualNode";
 	private final EPackage ePackage;
+
+	protected static final Logger logger = Logger.getLogger(MetamodelExtender.class.getName());
+
+	static {
+		configureLogging(logger);
+	}
 
 	private MetamodelExtender(EPackage ePackage) {
 		this.ePackage = ePackage;
@@ -44,7 +55,8 @@ public class MetamodelExtender {
 	 * Main method - creates virtual node classes within the given metamodel .ecore
 	 * file.
 	 * 
-	 * Suggested arguments: "../ihtcdomainmetamodel/model/Ihtcdomainmetamodel.ecore"
+	 * Suggested arguments:
+	 * "../ihtcdomainmetamodel/model/Ihtcdomainmetamodel.ecore"
 	 * "../ihtcdomainmetamodel/model/Ihtcdomainmetamodel_gen.ecore"
 	 */
 	public static void main(String[] args) throws IOException {
@@ -52,11 +64,12 @@ public class MetamodelExtender {
 			throw new IllegalArgumentException("Missing arguments - [input ecore path, output ecore path]");
 		}
 
+		logger.info("Started extension of metamodel: " + args[0]);
 		EPackage domainMetamodel = loadEcoreMetamodel(args[0]);
 		MetamodelExtender extender = new MetamodelExtender(domainMetamodel);
 		extender.createVirtualNodes();
 		saveEcoreMetamodel(domainMetamodel, args[1]);
-		System.out.println("Output saved to: " + args[1]);
+		logger.info("Output saved to: " + args[1]);
 	}
 
 	/**
@@ -269,4 +282,23 @@ public class MetamodelExtender {
 		resource.getContents().add(ePackage);
 		resource.save(Collections.emptyMap());
 	}
+
+	public static void configureLogging(final Logger logger) {
+		Objects.requireNonNull(logger);
+
+		// Configure logging
+		logger.setUseParentHandlers(false);
+		final ConsoleHandler handler = new ConsoleHandler();
+		handler.setFormatter(new Formatter() {
+			@Override
+			public String format(final LogRecord record) {
+				Objects.requireNonNull(record, "Given log entry was null.");
+				return record.getMessage() + System.lineSeparator();
+			}
+		});
+		if (logger.getHandlers().length == 0) {
+			logger.addHandler(handler);
+		}
+	}
+
 }
