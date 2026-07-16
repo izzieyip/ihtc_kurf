@@ -90,7 +90,12 @@ public class MetamodelExtender {
 					EReference opposite = ref.getEOpposite();
 					if (opposite != null && !processed.contains(opposite)) {
 						String key = createPairKey(ref, opposite);
-						pairs.put(key, new EReference[] { ref, opposite });
+						if (ref.getName().compareTo(opposite.getName()) < 0) {
+							pairs.put(key, new EReference[] { ref, opposite });
+						} else {
+							pairs.put(key, new EReference[] { opposite, ref });
+						}
+
 						processed.add(ref);
 						processed.add(opposite);
 					}
@@ -119,11 +124,11 @@ public class MetamodelExtender {
 		final EReference referencedRef;
 
 		RefPair(EReference ref1, EReference ref2) {
-			if (ref1.getUpperBound() == -1 || ref1.getUpperBound() > 1) {
-				this.containerClass = ref1.getEContainingClass();
-				this.referencedClass = (EClass) ref1.getEType();
-				this.containerRef = ref1;
-				this.referencedRef = ref2;
+			if (ref2.getUpperBound() == -1 || ref2.getUpperBound() > 1) {
+				this.containerClass = ref2.getEContainingClass();
+				this.referencedClass = (EClass) ref2.getEType();
+				this.containerRef = ref2;
+				this.referencedRef = ref1;
 			} else {
 				this.containerClass = (EClass) ref1.getEType();
 				this.referencedClass = ref1.getEContainingClass();
