@@ -13,6 +13,10 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl
+import java.util.logging.ConsoleHandler
+import java.util.logging.Formatter
+import java.util.logging.LogRecord
+import java.util.Objects
 
 /**
  * Simple Virtual Node object class to store eAnnotations
@@ -37,6 +41,8 @@ class JavaPostprocessorGenerator {
 	static var EPackage metamodel;
 	static var String metamodelPackageName
 	static var String newFileName
+	
+	protected static val logger = Logger.getLogger(JavaPostprocessorGenerator.name)
 
 	/**
 	 * Example arguments:
@@ -46,10 +52,10 @@ class JavaPostprocessorGenerator {
 	 */
 	def static void main(String[] args) throws Exception {
 		if (args.length < 3) {
-			System.err.println("Program missing arguments. Arguments should be:")
-			System.err.println("1. Output package (e.g org.emoflon.gips.ihtc.virtual.postprocessor)")
-			System.err.println("2. Output file path")
-			System.err.println("2. Ecore file path")
+			logger.warning("Program missing arguments. Arguments should be:")
+			logger.warning("1. Output package (e.g. org.emoflon.gips.ihtc.virtual.postprocessor)")
+			logger.warning("2. Output file path")
+			logger.warning("3. Ecore file path")
 			System.exit(1)
 		}
 
@@ -57,25 +63,25 @@ class JavaPostprocessorGenerator {
 	}
 
 	new(String outputPackage, String outputFilePath, String ecoreFilePath) throws Exception {
-
+		configureLogging();
 		metamodel = loadEcoreMetamodel(ecoreFilePath)
 		metamodelPackageName = metamodel.name.toLowerCase
 		newFileName = extractClassNameFromPath(outputFilePath)
-		println("Metamodel loaded \n")
+		logger.info("Metamodel loaded \n")
 
 		val virtualNodeClasses = findVirtualNodeClasses(metamodel)
-		println("Found " + virtualNodeClasses.size() + " virtual node class(es) \n:")
+		logger.info("Found " + virtualNodeClasses.size() + " virtual node class(es) \n:")
 
 		val virtualNodeInfoMap = getVirtualNodes(virtualNodeClasses)
-		println("Metadata extracted for all virtual nodes \n")
+		logger.info("Metadata extracted for all virtual nodes \n")
 
 		val generatedCode = generatePostprocessor(outputPackage, virtualNodeInfoMap)
-		println("Code generated \n")
+		logger.info("Code generated \n")
 
 		val outputFile = new File(outputFilePath)
 		outputFile.parentFile.mkdirs()
 		Files.write(Paths.get(outputFilePath), generatedCode.bytes)
-		println("File written successfully to: " + outputFilePath)
+		logger.info("File written successfully to: " + outputFilePath)
 	}
 
 	/**
@@ -345,4 +351,21 @@ class JavaPostprocessorGenerator {
 		val fileName = Paths.get(outputFilePath).getFileName().toString()
 		return fileName.substring(0, fileName.lastIndexOf('.'))
 	}
+	
+	/**
+	 * Configures the logging of this class.
+	 */
+	def static void configureLogging() {
+		// Configure logging
+		logger.setUseParentHandlers(false);
+		val ConsoleHandler handler = new ConsoleHandler();
+		handler.setFormatter(new Formatter() {
+			override String format(LogRecord record) {
+				Objects.requireNonNull(record, "Given log entry was null.");
+				return record.getMessage() + System.lineSeparator();
+			}
+		});
+		logger.addHandler(handler);
+	}
+	
 }
