@@ -23,7 +23,7 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
 
-import gips.examples.dependencies.GipsExamplesLogger;
+import static gips.examples.dependencies.GipsExamplesLogger.*;
 
 /**
  * Extends a domain metamodel .ecore file to include virtual eClasses
