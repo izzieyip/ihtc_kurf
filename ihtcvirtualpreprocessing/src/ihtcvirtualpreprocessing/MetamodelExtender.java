@@ -182,16 +182,16 @@ public class MetamodelExtender {
 		annotation.setSource(VIRTUAL_ANNOTATION_SOURCE);
 		annotation.getDetails().put("sourceClass", pair.fromClass.getName());
 		annotation.getDetails().put("targetClass", pair.toClass.getName());
-		annotation.getDetails().put("sourceReference", uncapitalize(pair.fromClass.getName()));
-		annotation.getDetails().put("targetReference", uncapitalize(pair.toClass.getName()));
+		annotation.getDetails().put("sourceReference", "src");
+		annotation.getDetails().put("targetReference", "trg");
 		annotation.getDetails().put("sourceEdgeReference", pair.fromRef.getName());
 		annotation.getDetails().put("targetEdgeReference", pair.toRef.getName());
 		virtualClass.getEAnnotations().add(annotation);
 	}
 
 	private static void addVirtualClassReferences(EClass virtualClass, RefPair pair) {
-		addEReference(virtualClass, uncapitalize(pair.fromClass.getName()), pair.fromClass);
-		addEReference(virtualClass, uncapitalize(pair.toClass.getName()), pair.toClass);
+		addEReference(virtualClass, "src", pair.fromClass);
+		addEReference(virtualClass, "trg", pair.toClass);
 
 		EAttribute isSelected = EcoreFactory.eINSTANCE.createEAttribute();
 		isSelected.setName("isSelected");
@@ -224,21 +224,13 @@ public class MetamodelExtender {
 
 	private static void setEOpposites(EClass virtualClass, RefPair pair, EReference containerRef,
 			EReference referencedRef) {
-		EReference refToContainer = (EReference) virtualClass
-				.getEStructuralFeature(uncapitalize(pair.fromClass.getName()));
-		EReference refToReferenced = (EReference) virtualClass
-				.getEStructuralFeature(uncapitalize(pair.toClass.getName()));
+		EReference refToContainer = (EReference) virtualClass.getEStructuralFeature("src");
+		EReference refToReferenced = (EReference) virtualClass.getEStructuralFeature("trg");
 
 		containerRef.setEOpposite(refToContainer);
 		refToContainer.setEOpposite(containerRef);
 		referencedRef.setEOpposite(refToReferenced);
 		refToReferenced.setEOpposite(referencedRef);
-	}
-
-	private static String uncapitalize(String str) {
-		if (str == null || str.length() == 0)
-			return str;
-		return Character.toLowerCase(str.charAt(0)) + str.substring(1);
 	}
 
 	private static String capitalize(String str) {
