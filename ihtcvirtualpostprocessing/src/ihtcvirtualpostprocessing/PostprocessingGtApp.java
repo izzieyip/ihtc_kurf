@@ -85,7 +85,7 @@ public class PostprocessingGtApp extends IhtcvirtualpostprocessingHiPEApp {
 		this.xmiOutputFilePath = xmiOutputFilePath;
 
 		// Configure logging
-		GipsExamplesLogger.configureLogging(logger);
+		configureLogging(logger);
 	}
 
 	/**
