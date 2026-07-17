@@ -12,7 +12,7 @@ import org.emoflon.ibex.gt.api.GraphTransformationPattern;
 import org.emoflon.ibex.gt.api.GraphTransformationRule;
 import org.emoflon.smartemf.persistence.SmartEMFResourceFactoryImpl;
 
-import gips.examples.dependencies.GipsExamplesLogger;
+import static gips.examples.dependencies.GipsExamplesLogger.*;
 import ihtcvirtualmetamodel.IhtcvirtualmetamodelPackage;
 import ihtcvirtualmetamodel.Root;
 import ihtcvirtualmetamodel.utils.FileUtils;
