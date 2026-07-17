@@ -5,7 +5,6 @@ import static gips.examples.dependencies.GipsExamplesLogger.configureLogging;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -73,12 +72,9 @@ public class MetamodelExtender {
 	 * Creates virtual nodes for all derived reference pairs.
 	 */
 	private void createVirtualNodes() {
-		Map<String, EClass> virtualNodesByName = new HashMap<>();
-
 		findDerivedReferencePairs(ePackage).values().forEach(pair -> {
 			EClass virtualClass = createVirtualClassForPair(pair[0], pair[1], ePackage);
 			addVirtualReferencesToBaseClasses(pair[0], pair[1], virtualClass);
-			virtualNodesByName.put(virtualClass.getName(), virtualClass);
 		});
 	}
 
