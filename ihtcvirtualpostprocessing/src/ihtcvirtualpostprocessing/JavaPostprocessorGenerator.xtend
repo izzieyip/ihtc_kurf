@@ -13,10 +13,8 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl
-import java.util.logging.ConsoleHandler
-import java.util.logging.Formatter
-import java.util.logging.LogRecord
-import java.util.Objects
+
+import static extension gips.examples.dependencies.GipsExamplesLogger.*
 
 /**
  * Simple Virtual Node object class to store eAnnotations
@@ -27,6 +25,8 @@ class VirtualNode {
 	public String targetReference
 	public String sourceEdge
 	public String targetEdge
+	public String sourceClass
+	public String targetClass
 
 	new(String className) {
 		this.name = className
@@ -41,7 +41,7 @@ class JavaPostprocessorGenerator {
 	static var EPackage metamodel;
 	static var String metamodelPackageName
 	static var String newFileName
-	
+
 	protected static val logger = Logger.getLogger(JavaPostprocessorGenerator.name)
 
 	/**
@@ -63,7 +63,7 @@ class JavaPostprocessorGenerator {
 	}
 
 	new(String outputPackage, String outputFilePath, String ecoreFilePath) throws Exception {
-		configureLogging();
+		logger.configureLogging
 		metamodel = loadEcoreMetamodel(ecoreFilePath)
 		metamodelPackageName = metamodel.name.toLowerCase
 		newFileName = extractClassNameFromPath(outputFilePath)
@@ -103,6 +103,8 @@ class JavaPostprocessorGenerator {
 				virtualNode.targetReference = annotation.details.get("targetReference")
 				virtualNode.sourceEdge = annotation.details.get("sourceEdgeReference")
 				virtualNode.targetEdge = annotation.details.get("targetEdgeReference")
+				virtualNode.sourceClass = annotation.details.get("sourceClass")
+				virtualNode.targetClass = annotation.details.get("targetClass")
 
 				virtualNode
 			} else {
@@ -285,20 +287,18 @@ class JavaPostprocessorGenerator {
 		virtualNodes.map[generateProcessMethod(it)].join("\n\n")
 	}
 
-	private def String generateProcessMethod(VirtualNode vn) {
-		'''
-			private void process_«vn.name»(EObject virtualNode) {
-			        «vn.name» vNode = («vn.name») virtualNode;
-			        Object source = vNode.get«vn.sourceReference.toFirstUpper»();
-			        Object target = vNode.get«vn.targetReference.toFirstUpper»();
-			        
-			        if (vNode.isIsSelected()) {
-			        	((«vn.sourceReference.toFirstUpper») source).«assignDerivedEdges(vn.sourceReference, vn.sourceEdge)»((«vn.targetReference.toFirstUpper») target);
-			        	((«vn.targetReference.toFirstUpper»)target).«assignDerivedEdges(vn.targetReference, vn.targetEdge)»((«vn.sourceReference.toFirstUpper») source);
-			    	}
-			}
-		'''
-	}
+	private def String generateProcessMethod(VirtualNode vn) '''
+		private void process_«vn.name»(EObject virtualNode) {
+		        «vn.name» vNode = («vn.name») virtualNode;
+		        Object source = vNode.get«vn.sourceReference.toFirstUpper»();
+		        Object target = vNode.get«vn.targetReference.toFirstUpper»();
+		        
+		        if (vNode.isIsSelected()) {
+		        	((«vn.sourceClass») source).«assignDerivedEdges(vn.sourceClass, vn.sourceEdge)»((«vn.targetClass») target);
+		        	((«vn.targetClass»)target).«assignDerivedEdges(vn.targetClass, vn.targetEdge)»((«vn.sourceClass») source);
+		    	}
+		}
+	'''
 
 	/**
 	 * Uses getDerived.add(target) if derived edge is a collection
@@ -351,21 +351,5 @@ class JavaPostprocessorGenerator {
 		val fileName = Paths.get(outputFilePath).getFileName().toString()
 		return fileName.substring(0, fileName.lastIndexOf('.'))
 	}
-	
-	/**
-	 * Configures the logging of this class.
-	 */
-	def static void configureLogging() {
-		// Configure logging
-		logger.setUseParentHandlers(false);
-		val ConsoleHandler handler = new ConsoleHandler();
-		handler.setFormatter(new Formatter() {
-			override String format(LogRecord record) {
-				Objects.requireNonNull(record, "Given log entry was null.");
-				return record.getMessage() + System.lineSeparator();
-			}
-		});
-		logger.addHandler(handler);
-	}
-	
+
 }

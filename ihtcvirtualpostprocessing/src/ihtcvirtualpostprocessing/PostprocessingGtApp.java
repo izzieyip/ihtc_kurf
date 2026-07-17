@@ -2,9 +2,6 @@ package ihtcvirtualpostprocessing;
 
 import java.io.IOException;
 import java.util.Objects;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Formatter;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 
 import org.eclipse.emf.common.util.URI;
@@ -15,6 +12,7 @@ import org.emoflon.ibex.gt.api.GraphTransformationPattern;
 import org.emoflon.ibex.gt.api.GraphTransformationRule;
 import org.emoflon.smartemf.persistence.SmartEMFResourceFactoryImpl;
 
+import static gips.examples.dependencies.GipsExamplesLogger.*;
 import ihtcvirtualmetamodel.IhtcvirtualmetamodelPackage;
 import ihtcvirtualmetamodel.Root;
 import ihtcvirtualmetamodel.utils.FileUtils;
@@ -87,16 +85,7 @@ public class PostprocessingGtApp extends IhtcvirtualpostprocessingHiPEApp {
 		this.xmiOutputFilePath = xmiOutputFilePath;
 
 		// Configure logging
-		logger.setUseParentHandlers(false);
-		final ConsoleHandler handler = new ConsoleHandler();
-		handler.setFormatter(new Formatter() {
-			@Override
-			public String format(final LogRecord record) {
-				Objects.requireNonNull(record, "Given log entry was null.");
-				return record.getMessage() + System.lineSeparator();
-			}
-		});
-		logger.addHandler(handler);
+		configureLogging(logger);
 	}
 
 	/**
@@ -107,15 +96,15 @@ public class PostprocessingGtApp extends IhtcvirtualpostprocessingHiPEApp {
 		final IhtcvirtualpostprocessingAPI api = this.initAPI();
 
 		// Apply all GT rule matches until the specified limit hits
-		 for (var entry : api.getAllPatterns().entrySet()) {
-			 String ruleName = entry.getKey();
-		     GraphTransformationPattern<?, ?> pattern = entry.getValue().get();
-		        
-		     if (pattern instanceof GraphTransformationRule rule) {
-		    	 System.out.println("Applying rule: " + ruleName);
-		         applyMatches(rule, GT_RULE_APPLICATION_LIMIT);
-		     }
-		 }
+		for (var entry : api.getAllPatterns().entrySet()) {
+			String ruleName = entry.getKey();
+			GraphTransformationPattern<?, ?> pattern = entry.getValue().get();
+
+			if (pattern instanceof GraphTransformationRule rule) {
+				System.out.println("Applying rule: " + ruleName);
+				applyMatches(rule, GT_RULE_APPLICATION_LIMIT);
+			}
+		}
 
 		// Persist model to XMI output path
 		try {

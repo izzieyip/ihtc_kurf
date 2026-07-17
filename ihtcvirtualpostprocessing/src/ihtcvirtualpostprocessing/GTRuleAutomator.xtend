@@ -1,5 +1,6 @@
 package ihtcvirtualpostprocessing
 
+import static extension gips.examples.dependencies.GipsExamplesLogger.*
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -12,10 +13,6 @@ import org.eclipse.emf.ecore.EClass
 import org.eclipse.emf.ecore.EPackage
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl
-import java.util.logging.ConsoleHandler
-import java.util.logging.Formatter
-import java.util.logging.LogRecord
-import java.util.Objects
 
 /**
  * Generator to automatically produce an Emoflon set of post-processing GT rules, given a virtual metamodel.
@@ -56,7 +53,7 @@ class GTRuleAutomator {
 	 * Constructor - loads the metamodel
 	 */
 	new(String inputPath) throws IOException {
-		configureLogging();
+		logger.configureLogging
 		this.ecorePath = inputPath
 		this.metamodel = loadEcoreMetamodel(ecorePath)
 
@@ -189,9 +186,7 @@ class GTRuleAutomator {
 	 * Get a short variable name (e.g., "Shift" -> "s", "Workload" -> "w")
 	 * Each name will be unique by the incremented static class id attribute
 	 */
-	private def getVariableName(String className) '''
-	    «className.substring(0, 1).toLowerCase»«id++»
-	'''
+	private def getVariableName(String className) '''«className.substring(0, 1).toLowerCase»«id++»'''
 
 	/**
 	 * Write the generated GT rules to a file
@@ -223,21 +218,5 @@ class GTRuleAutomator {
 		automator.writeToFile(args.get(1))
 
 		logger.info("GT Rules generated successfully")
-	}
-	
-	/**
-	 * Configures the logging of this class.
-	 */
-	def static void configureLogging() {
-		// Configure logging
-		logger.setUseParentHandlers(false);
-		val ConsoleHandler handler = new ConsoleHandler();
-		handler.setFormatter(new Formatter() {
-			override String format(LogRecord record) {
-				Objects.requireNonNull(record, "Given log entry was null.");
-				return record.getMessage() + System.lineSeparator();
-			}
-		});
-		logger.addHandler(handler);
 	}
 }
