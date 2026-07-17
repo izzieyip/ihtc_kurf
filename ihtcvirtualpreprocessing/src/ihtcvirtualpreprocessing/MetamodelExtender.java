@@ -1,5 +1,7 @@
 package ihtcvirtualpreprocessing;
 
+import static gips.examples.dependencies.GipsExamplesLogger.configureLogging;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -22,8 +24,6 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl;
-
-import static gips.examples.dependencies.GipsExamplesLogger.*;
 
 /**
  * Extends a domain metamodel .ecore file to include virtual eClasses
@@ -53,8 +53,7 @@ public class MetamodelExtender {
 	 * Main method - creates virtual node classes within the given metamodel .ecore
 	 * file.
 	 * 
-	 * Suggested arguments:
-	 * "../ihtcdomainmetamodel/model/Ihtcdomainmetamodel.ecore"
+	 * Suggested arguments: "../ihtcdomainmetamodel/model/Ihtcdomainmetamodel.ecore"
 	 * "../ihtcdomainmetamodel/model/Ihtcdomainmetamodel_gen.ecore"
 	 */
 	public static void main(String[] args) throws IOException {
@@ -73,7 +72,7 @@ public class MetamodelExtender {
 	/**
 	 * Creates virtual nodes for all derived reference pairs.
 	 */
-	private Map<String, EClass> createVirtualNodes() {
+	private void createVirtualNodes() {
 		Map<String, EClass> virtualNodesByName = new HashMap<>();
 
 		findDerivedReferencePairs(ePackage).values().forEach(pair -> {
@@ -81,8 +80,6 @@ public class MetamodelExtender {
 			addVirtualReferencesToBaseClasses(pair[0], pair[1], virtualClass);
 			virtualNodesByName.put(virtualClass.getName(), virtualClass);
 		});
-
-		return virtualNodesByName;
 	}
 
 	/**
