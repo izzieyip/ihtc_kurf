@@ -1,6 +1,5 @@
 package ihtcvirtualpostprocessing
 
-import static extension gips.examples.dependencies.GipsExamplesLogger.*
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
@@ -14,6 +13,8 @@ import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.emf.ecore.resource.ResourceSet
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.xmi.impl.EcoreResourceFactoryImpl
+
+import static extension gips.examples.dependencies.GipsExamplesLogger.*
 
 /**
  * Simple Virtual Node object class to store eAnnotations
@@ -282,20 +283,18 @@ class JavaPostprocessorGenerator {
 		virtualNodes.map[generateProcessMethod(it)].join("\n\n")
 	}
 
-	private def String generateProcessMethod(VirtualNode vn) {
-		'''
-			private void process_«vn.name»(EObject virtualNode) {
-			        «vn.name» vNode = («vn.name») virtualNode;
-			        Object source = vNode.get«vn.sourceReference.toFirstUpper»();
-			        Object target = vNode.get«vn.targetReference.toFirstUpper»();
-			        
-			        if (vNode.isIsSelected()) {
-			        	((«vn.sourceReference.toFirstUpper») source).«assignDerivedEdges(vn.sourceReference, vn.sourceEdge)»((«vn.targetReference.toFirstUpper») target);
-			        	((«vn.targetReference.toFirstUpper»)target).«assignDerivedEdges(vn.targetReference, vn.targetEdge)»((«vn.sourceReference.toFirstUpper») source);
-			    	}
-			}
-		'''
-	}
+	private def String generateProcessMethod(VirtualNode vn) '''
+		private void process_«vn.name»(EObject virtualNode) {
+		        «vn.name» vNode = («vn.name») virtualNode;
+		        Object source = vNode.get«vn.sourceReference.toFirstUpper»();
+		        Object target = vNode.get«vn.targetReference.toFirstUpper»();
+		        
+		        if (vNode.isIsSelected()) {
+		        	((«vn.sourceReference.toFirstUpper») source).«assignDerivedEdges(vn.sourceReference, vn.sourceEdge)»((«vn.targetReference.toFirstUpper») target);
+		        	((«vn.targetReference.toFirstUpper»)target).«assignDerivedEdges(vn.targetReference, vn.targetEdge)»((«vn.sourceReference.toFirstUpper») source);
+		    	}
+		}
+	'''
 
 	/**
 	 * Uses getDerived.add(target) if derived edge is a collection
