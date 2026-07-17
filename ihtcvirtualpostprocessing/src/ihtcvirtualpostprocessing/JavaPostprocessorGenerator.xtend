@@ -60,7 +60,7 @@ class JavaPostprocessorGenerator {
 	}
 
 	new(String outputPackage, String outputFilePath, String ecoreFilePath) throws Exception {
-		GipsExamplesLogger.configureLogging(logger)
+		logger.configureLogging
 		metamodel = loadEcoreMetamodel(ecoreFilePath)
 		metamodelPackageName = metamodel.name.toLowerCase
 		newFileName = extractClassNameFromPath(outputFilePath)
