@@ -1,6 +1,6 @@
 package ihtcvirtualpostprocessing
 
-import gips.examples.dependencies.GipsExamplesLogger
+import static extension gips.examples.dependencies.GipsExamplesLogger.*
 import java.io.File
 import java.io.IOException
 import java.nio.file.Files
