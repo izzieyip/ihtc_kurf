@@ -25,6 +25,8 @@ class VirtualNode {
 	public String targetReference
 	public String sourceEdge
 	public String targetEdge
+	public String sourceClass
+	public String targetClass
 
 	new(String className) {
 		this.name = className
@@ -101,6 +103,8 @@ class JavaPostprocessorGenerator {
 				virtualNode.targetReference = annotation.details.get("targetReference")
 				virtualNode.sourceEdge = annotation.details.get("sourceEdgeReference")
 				virtualNode.targetEdge = annotation.details.get("targetEdgeReference")
+				virtualNode.sourceClass = annotation.details.get("sourceClass")
+				virtualNode.targetClass = annotation.details.get("targetClass")
 
 				virtualNode
 			} else {
@@ -290,8 +294,8 @@ class JavaPostprocessorGenerator {
 		        Object target = vNode.get«vn.targetReference.toFirstUpper»();
 		        
 		        if (vNode.isIsSelected()) {
-		        	((«vn.sourceReference.toFirstUpper») source).«assignDerivedEdges(vn.sourceReference, vn.sourceEdge)»((«vn.targetReference.toFirstUpper») target);
-		        	((«vn.targetReference.toFirstUpper»)target).«assignDerivedEdges(vn.targetReference, vn.targetEdge)»((«vn.sourceReference.toFirstUpper») source);
+		        	((«vn.sourceClass») source).«assignDerivedEdges(vn.sourceClass, vn.sourceEdge)»((«vn.targetClass») target);
+		        	((«vn.targetClass»)target).«assignDerivedEdges(vn.targetClass, vn.targetEdge)»((«vn.sourceClass») source);
 		    	}
 		}
 	'''
