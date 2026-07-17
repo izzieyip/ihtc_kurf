@@ -142,30 +142,30 @@ public class MetamodelExtender {
 	}
 
 	private static class RefPair {
-		final EClass containerClass;
-		final EClass referencedClass;
-		final EReference containerRef;
-		final EReference referencedRef;
+		final EClass fromClass;
+		final EClass toClass;
+		final EReference fromRef;
+		final EReference toRef;
 
 		RefPair(EReference ref1, EReference ref2) {
 			// Use alphabetic order
 			if (ref1.getName().compareTo(ref2.getName()) < 0) {
-				this.containerClass = ref2.getEContainingClass();
-				this.referencedClass = (EClass) ref2.getEType();
-				this.containerRef = ref2;
-				this.referencedRef = ref1;
+				this.fromClass = ref2.getEContainingClass();
+				this.toClass = (EClass) ref2.getEType();
+				this.fromRef = ref2;
+				this.toRef = ref1;
 			} else {
-				this.containerClass = ref1.getEContainingClass();
-				this.referencedClass = (EClass) ref1.getEType();
-				this.containerRef = ref1;
-				this.referencedRef = ref2;
+				this.fromClass = ref1.getEContainingClass();
+				this.toClass = (EClass) ref1.getEType();
+				this.fromRef = ref1;
+				this.toRef = ref2;
 			}
 		}
 	}
 
 	private static EClass createVirtualClassForPair(EReference ref1, EReference ref2, EPackage ePackage) {
 		RefPair pair = new RefPair(ref1, ref2);
-		String virtualClassName = "Virtual" + pair.containerClass.getName() + "To" + pair.referencedClass.getName();
+		String virtualClassName = "Virtual" + pair.fromClass.getName() + "To" + pair.toClass.getName();
 
 		EClass virtualClass = EcoreFactory.eINSTANCE.createEClass();
 		virtualClass.setName(virtualClassName);
@@ -180,18 +180,18 @@ public class MetamodelExtender {
 	private static void addVirtualMetadata(EClass virtualClass, RefPair pair) {
 		EAnnotation annotation = EcoreFactory.eINSTANCE.createEAnnotation();
 		annotation.setSource(VIRTUAL_ANNOTATION_SOURCE);
-		annotation.getDetails().put("sourceClass", pair.containerClass.getName());
-		annotation.getDetails().put("targetClass", pair.referencedClass.getName());
-		annotation.getDetails().put("sourceReference", uncapitalize(pair.containerClass.getName()));
-		annotation.getDetails().put("targetReference", uncapitalize(pair.referencedClass.getName()));
-		annotation.getDetails().put("sourceEdgeReference", pair.containerRef.getName());
-		annotation.getDetails().put("targetEdgeReference", pair.referencedRef.getName());
+		annotation.getDetails().put("sourceClass", pair.fromClass.getName());
+		annotation.getDetails().put("targetClass", pair.toClass.getName());
+		annotation.getDetails().put("sourceReference", uncapitalize(pair.fromClass.getName()));
+		annotation.getDetails().put("targetReference", uncapitalize(pair.toClass.getName()));
+		annotation.getDetails().put("sourceEdgeReference", pair.fromRef.getName());
+		annotation.getDetails().put("targetEdgeReference", pair.toRef.getName());
 		virtualClass.getEAnnotations().add(annotation);
 	}
 
 	private static void addVirtualClassReferences(EClass virtualClass, RefPair pair) {
-		addEReference(virtualClass, uncapitalize(pair.containerClass.getName()), pair.containerClass);
-		addEReference(virtualClass, uncapitalize(pair.referencedClass.getName()), pair.referencedClass);
+		addEReference(virtualClass, uncapitalize(pair.fromClass.getName()), pair.fromClass);
+		addEReference(virtualClass, uncapitalize(pair.toClass.getName()), pair.toClass);
 
 		EAttribute isSelected = EcoreFactory.eINSTANCE.createEAttribute();
 		isSelected.setName("isSelected");
@@ -210,13 +210,13 @@ public class MetamodelExtender {
 	private static void addVirtualReferencesToBaseClasses(EReference ref1, EReference ref2, EClass virtualClass) {
 		RefPair pair = new RefPair(ref1, ref2);
 
-		EReference containerReference = addEReference(pair.containerClass,
-				"virtual" + capitalize(pair.referencedClass.getName()), virtualClass);
+		EReference containerReference = addEReference(pair.fromClass, "virtual" + capitalize(pair.toClass.getName()),
+				virtualClass);
 		containerReference.setContainment(true);
 		containerReference.setUpperBound(-1);
 
-		EReference referencedReference = addEReference(pair.referencedClass,
-				"virtual" + capitalize(pair.containerClass.getName()), virtualClass);
+		EReference referencedReference = addEReference(pair.toClass, "virtual" + capitalize(pair.fromClass.getName()),
+				virtualClass);
 		referencedReference.setUpperBound(-1);
 
 		setEOpposites(virtualClass, pair, containerReference, referencedReference);
@@ -225,9 +225,9 @@ public class MetamodelExtender {
 	private static void setEOpposites(EClass virtualClass, RefPair pair, EReference containerRef,
 			EReference referencedRef) {
 		EReference refToContainer = (EReference) virtualClass
-				.getEStructuralFeature(uncapitalize(pair.containerClass.getName()));
+				.getEStructuralFeature(uncapitalize(pair.fromClass.getName()));
 		EReference refToReferenced = (EReference) virtualClass
-				.getEStructuralFeature(uncapitalize(pair.referencedClass.getName()));
+				.getEStructuralFeature(uncapitalize(pair.toClass.getName()));
 
 		containerRef.setEOpposite(refToContainer);
 		refToContainer.setEOpposite(containerRef);
