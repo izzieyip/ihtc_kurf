@@ -111,9 +111,9 @@ public class MetamodelExtender {
 		Set<EReference> processed = new HashSet<>();
 
 		ePackage.getEClassifiers().stream().filter(EClass.class::isInstance).map(EClass.class::cast)
-				.flatMap(eClass -> eClass.getEStructuralFeatures().stream()).filter(EReference.class::isInstance)
-				.map(EReference.class::cast).filter(ref -> ref.getName().startsWith("derived"))
-				.filter(ref -> !processed.contains(ref)).forEach(ref -> {
+				.flatMap(eClass -> eClass.getEAllReferences().stream()).map(EReference.class::cast)
+				.filter(ref -> ref.getName().startsWith("derived")).filter(ref -> !processed.contains(ref))
+				.forEach(ref -> {
 					EReference opposite = ref.getEOpposite();
 					if (opposite != null && !processed.contains(opposite)) {
 						String key = createPairKey(ref, opposite);
