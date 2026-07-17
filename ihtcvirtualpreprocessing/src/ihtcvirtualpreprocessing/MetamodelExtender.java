@@ -42,7 +42,7 @@ public class MetamodelExtender {
 	protected static final Logger logger = Logger.getLogger(MetamodelExtender.class.getName());
 
 	static {
-		GipsExamplesLogger.configureLogging(logger);
+		configureLogging(logger);
 	}
 
 	private MetamodelExtender(EPackage ePackage) {
