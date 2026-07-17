@@ -53,7 +53,7 @@ class GTRuleAutomator {
 	 * Constructor - loads the metamodel
 	 */
 	new(String inputPath) throws IOException {
-		GipsExamplesLogger.configureLogging(logger)
+		logger.configureLogging
 		this.ecorePath = inputPath
 		this.metamodel = loadEcoreMetamodel(ecorePath)
 
